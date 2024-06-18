@@ -14,7 +14,7 @@ class PortfolioController extends Controller
     {
         $portfolios = Portfolio::with('tags', 'images', 'project')->get();
         $tags = Tag::all();
-        $projects = ProjectList::all();
+        $projects = ProjectList::all();  // Fetch projects here
         $portfolio = null;
 
         if ($request->has('id')) {
@@ -64,8 +64,9 @@ class PortfolioController extends Controller
         'tags' => 'required|array',
         'tags.*' => 'exists:tags,id',
         'images.*' => 'image|max:2048', // Validate each image
+        'existing_images' => 'array',
         'existing_images.*' => 'image|max:2048', // Validate each existing image
-        'project_id' => 'nullable|exists:projects,id',
+        'project_id' => 'nullable|exists:project_list,id',
     ]);
 
     $portfolio->update([
@@ -76,8 +77,9 @@ class PortfolioController extends Controller
 
     $portfolio->tags()->sync($request->tags);
 
-    if ($request->hasFile('existing_images')) {
-        foreach ($request->file('existing_images') as $imageId => $image) {
+    // Update existing images
+    if ($request->has('existing_images')) {
+        foreach ($request->existing_images as $imageId => $image) {
             $imageContent = base64_encode(file_get_contents($image));
             $portfolioImage = PortfolioImage::findOrFail($imageId);
             $portfolioImage->update([
@@ -86,6 +88,7 @@ class PortfolioController extends Controller
         }
     }
 
+    // Add new images
     if ($request->hasFile('images')) {
         foreach ($request->file('images') as $image) {
             $imageContent = base64_encode(file_get_contents($image));
@@ -98,6 +101,8 @@ class PortfolioController extends Controller
 
     return redirect()->route('portfolios.index')->with('success', 'Portfolio updated successfully.');
 }
+
+    
 
 
     public function destroy(Portfolio $portfolio)
@@ -115,65 +120,67 @@ class PortfolioController extends Controller
     }
 
     public function public(Request $request)
-{
-    $query = Portfolio::query();
-
-    if ($request->filled('search')) {
-        $query->where('name', 'like', '%' . $request->search . '%');
-    }
-
-    if ($request->filled('tags')) {
-        $tags = $request->input('tags');
-        $query->whereHas('tags', function ($q) use ($tags) {
-            $q->whereIn('tags.id', $tags);
-        });
-    }
-
-    $portfolios = $query->with('images', 'tags')->paginate(12);
-    $tags = Tag::all();
-
-    return view('portfolio', compact('portfolios', 'tags'));
-}
-
-
-    public function show($id)
     {
-        $portfolio = Portfolio::with('images', 'tags')->findOrFail($id);
-        $primaryImage = $portfolio->images->first(); // Get the first image
-        return view('portfolio.content', compact('portfolio', 'primaryImage'));
-    }
+        $query = Portfolio::query();
 
-    public function manage(Request $request)
-    {
-        $portfolio = null;
-        if ($request->has('id')) {
-            $portfolio = Portfolio::with('images', 'tags')->find($request->id);
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        $portfolios = Portfolio::with('images', 'tags')->get();
-        $tags = Tag::all(); // Fetch tags here
+        if ($request->filled('tags')) {
+            $tags = $request->input('tags');
+            $query->whereHas('tags', function ($q) use ($tags) {
+                $q->whereIn('tags.id', $tags);
+            });
+        }
 
-        return view('portfolioEdit.index', compact('portfolio', 'portfolios', 'tags'));
+        $portfolios = $query->with('images', 'tags')->paginate(12);
+        $tags = Tag::all();
+
+        return view('portfolio', compact('portfolios', 'tags'));
     }
 
-    public function filter(Request $request)
+    public function show($id)
 {
-    $query = Portfolio::query();
-
-    if ($request->filled('search')) {
-        $query->where('name', 'like', '%' . $request->search . '%');
-    }
-
-    if ($request->filled('tags')) {
-        $tags = $request->input('tags');
-        $query->whereHas('tags', function ($q) use ($tags) {
-            $q->whereIn('tags.id', $tags);
-        });
-    }
-
-    $portfolios = $query->with('images', 'tags')->paginate(12);
-
-    return view('portfolio.list', compact('portfolios'))->render();
+    $portfolio = Portfolio::with('images', 'tags')->findOrFail($id);
+    $primaryImage = $portfolio->images->first(); // Get the first image
+    return view('portfolio.content', compact('portfolio', 'primaryImage'));
 }
 
+
+    public function manage(Request $request)
+{
+    $portfolio = null;
+    if ($request->has('id')) {
+        $portfolio = Portfolio::with('images', 'tags', 'project')->find($request->id);
+    }
+
+    $portfolios = Portfolio::with('images', 'tags', 'project')->get();
+    $tags = Tag::all(); // Fetch tags here
+    $projects = ProjectList::all();  // Fetch projects here
+
+    return view('portfolioEdit.index', compact('portfolio', 'portfolios', 'tags', 'projects'));
+}
+
+
+
+    public function filter(Request $request)
+    {
+        $query = Portfolio::query();
+
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('tags')) {
+            $tags = $request->input('tags');
+            $query->whereHas('tags', function ($q) use ($tags) {
+                $q->whereIn('tags.id', $tags);
+            });
+        }
+
+        $portfolios = $query->with('images', 'tags')->paginate(12);
+
+        return view('portfolio.list', compact('portfolios'))->render();
+    }
 }

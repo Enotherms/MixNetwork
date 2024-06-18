@@ -7,6 +7,7 @@ use App\Models\ProjectList;
 use App\Models\Partner;
 use App\Models\AboutUs;
 use App\Models\Service;
+use App\Models\Portfolio; // Add this line
 use Illuminate\Http\Request;
 
 class HomepageController extends Controller
@@ -16,12 +17,11 @@ class HomepageController extends Controller
         $images = CarouselImage::where('is_active', true)->get();
         $projects = ProjectList::all();
         $partners = Partner::all();
-
-        // Check if AboutUs exists, if not, create a default one
         $aboutUs = AboutUs::firstOrCreate([], ['content' => 'Default About Us content']);
         $services = Service::all();
+        $latestPortfolios = Portfolio::with('images')->latest()->take(3)->get(); // Add this line
 
-        return view('home', compact('images', 'projects', 'partners', 'aboutUs', 'services'));
+        return view('home', compact('images', 'projects', 'partners', 'aboutUs', 'services', 'latestPortfolios')); // Add 'latestPortfolios'
     }
 
     public function edit()

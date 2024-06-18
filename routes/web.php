@@ -59,12 +59,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/editprojects/{id}', [ProjectListController::class, 'destroy'])->name('projects.destroy');
 
     // Portfolio routes
-    Route::get('/portfolioEdit', [PortfolioController::class, 'index'])->name('portfolios.index');
-    Route::get('/portfolioEdit/manage', [PortfolioController::class, 'manage'])->name('portfolios.manage');
-    Route::post('/portfolioEdit', [PortfolioController::class, 'store'])->name('portfolios.store');
-    Route::put('/portfolioEdit/{portfolio}', [PortfolioController::class, 'update'])->name('portfolios.update');
-    Route::delete('/portfolioEdit/{portfolio}', [PortfolioController::class, 'destroy'])->name('portfolios.destroy');
-    Route::delete('/portfolioImages/{id}', [PortfolioImageController::class, 'destroy'])->name('portfolioImages.destroy');
+    Route::middleware(['auth', 'verified'])->group(function () {
+        Route::get('/portfolioEdit', [PortfolioController::class, 'index'])->name('portfolios.index');
+        Route::get('/portfolioEdit/manage', [PortfolioController::class, 'manage'])->name('portfolios.manage');
+        Route::post('/portfolioEdit', [PortfolioController::class, 'store'])->name('portfolios.store');
+        Route::put('/portfolioEdit/{portfolio}', [PortfolioController::class, 'update'])->name('portfolios.update');
+        Route::delete('/portfolioEdit/{portfolio}', [PortfolioController::class, 'destroy'])->name('portfolios.destroy');
+        Route::delete('/portfolioImages/{id}', [PortfolioImageController::class, 'destroy'])->name('portfolioImages.destroy');
+    });
+    
 
     
 

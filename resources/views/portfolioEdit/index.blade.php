@@ -54,15 +54,7 @@
             @if(isset($portfolio) && $portfolio->images)
                 <div class="mt-2">
                     @foreach($portfolio->images as $image)
-                        <div class="relative inline-block">
-                            <img src="data:image/jpeg;base64,{{ $image->image }}" width="100" class="inline-block">
-                            <input type="file" name="existing_images[{{ $image->id }}]" class="mt-2 block">
-                            <form action="{{ route('portfolioImages.destroy', $image->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this image?');" class="absolute top-0 right-0">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="text-red-600 hover:text-red-900 text-xs">x</button>
-                            </form>
-                        </div>
+                        <img src="data:image/jpeg;base64,{{ $image->image }}" width="100" class="inline-block">
                     @endforeach
                 </div>
             @endif

@@ -58,7 +58,6 @@
         </div>
       </div>
     </div>
-
   </section>
 
   <section id="projects">
@@ -86,10 +85,6 @@
     </div>
 </section>
 
-
-
-
-  
 <section id="service">
       <div class="flex justify-center m-[2em] hover:cursor-default">
         <p class="font-thin text-[2em] lg:text-[3em]">
@@ -125,21 +120,20 @@
     <div class="m-[2em] space-y-[1em]">
       <a href="/portfolio" class="hover:bg-FooterBlue hover:text-WhiteCol font-medium rounded-md p-[0.4em] duration-300 md:text-[1.5em] md:ml-[2em] 2xl:ml-[10em]">View All</a>
         <div class="md:flex md:justify-center md:space-x-[2em]">
-          <div class="space-y-[1em]">
-            <img src="/images/dummy4.png" class="w-[25em] object-contain">
-            <a class="flex justify-center font-medium">Pound Fit Louder Together</a>
-          </div>
-          <div class="space-y-[1em]">
-            <img src="/images/dummy5.png" class="w-[25em] object-contain">
-            <a class="flex justify-center font-medium">Nonton Bersama Final Piala FA</a>
-          </div>
-          <div class="space-y-[1em]">
-            <img src="/images/dummy6.png" class="w-[25em] object-contain">
-            <a class="flex justify-center font-medium">Nonton Bersama Piala FA</a>
-          </div>
+            @foreach ($latestPortfolios as $portfolio)
+                <div class="space-y-[1em]">
+                  <a href="{{ route('portfolio.content', $portfolio->id) }}">
+                  @if($portfolio->images->isNotEmpty())
+                        <img src="data:image/jpeg;base64,{{ $portfolio->images->first()->image }}" class="w-[25em] object-contain" alt="{{ $portfolio->name }}">
+                    @else
+                        <img src="/images/placeholder.png" class="w-[25em] object-contain" alt="{{ $portfolio->name }}">
+                    @endif
+                </a>
+                    
+                </div>
+            @endforeach
         </div>
-      </div>
-
+    </div>
   </section>
 
   <section id="partners">
